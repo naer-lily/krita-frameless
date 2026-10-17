@@ -1,17 +1,28 @@
 <h1 id="frameless-krita-plugin">Frameless — Krita Plugin</h1>
 
 <p>A Krita plugin that replaces the native Windows titlebar with a
-compact header — window control buttons (minimise / maximise / close)
-are embedded on the right side of the menu bar, and empty menubar space
-can be dragged to move the window or double-clicked to toggle
-maximise.</p>
+compact, fully configurable header. Window control buttons (minimise /
+maximise / close), the document name, the original menus, and even
+Krita's own QToolBars all share a single row on top of the canvas —
+reclaiming the vertical space the native titlebar used to take.</p>
+<p>The layout is driven by <code>config.json</code>: drag empty space to
+move the window, double-click it to toggle maximise, and reorder or add
+components by editing the file. A template is written automatically on
+first run, or whenever the file is missing or corrupt.</p>
 <p><strong>Windows 10 / 11 only.</strong> Other operating systems are
 unaffected (the plugin silently skips non-Windows messages at load
 time).</p>
+
 <h2 id="installation">Installation</h2>
-<p>refer <a href="https://github.com/naer-lily/krita-shortcut-fix"
+<p>Put the plugin folder — <code>frameless.desktop</code> plus the
+<code>frameless/</code> package — into Krita's <code>pykrita</code>
+directory. A directory symlink into <code>pykrita</code> works too, and
+keeps the sources editable in place. Refer also <a
+href="https://github.com/naer-lily/krita-shortcut-fix"
 class="uri">https://github.com/naer-lily/krita-shortcut-fix</a>.
-<strong>A manuall restart is required</strong>.</p>
+<strong>A manual restart is required</strong>: Krita only scans
+<code>pykrita</code> at startup.</p>
+
 <h2 id="visual-comparison">Visual comparison</h2>
 <pre><code>Native Krita:
 ┌─────────────────────────────────────────────┐
@@ -23,19 +34,179 @@ class="uri">https://github.com/naer-lily/krita-shortcut-fix</a>.
 └─────────────────────────────────────────────┘
 
 Frameless:
-┌─────────────────────────────────────────────┐
-│  File  Edit  View  ...          ─  □  ✕  │  ← menu bar == titlebar
-├─────────────────────────────────────────────┤
-│  canvas                                      │
-└─────────────────────────────────────────────┘</code></pre>
+┌──────────────────────────────────────────────────┐
+│  doc.kra  ☰  [brush size ████]  [tool buttons]  ─  □  ✕  │  ← custom titlebar
+├──────────────────────────────────────────────────┤
+│  canvas                                           │
+└──────────────────────────────────────────────────┘</code></pre>
 <ul>
-<li>Three window control buttons appear on the right of the menu
-bar</li>
-<li>Empty menubar space (where no menu action sits) can be dragged to
-move the window; Aero Snap (half-screen / quarter-screen) works when
-dragged to a screen edge</li>
-<li>Double-click empty menubar space to toggle maximise / restore</li>
+<li>Document name on the left, falling back to <code>Untitled</code>
+when no document is open</li>
+<li>Menus inline, or collapsed into a single icon button with a dropdown
+— Alt+letter shortcuts survive in both modes</li>
+<li>Photoshop-style tool slots: one button per tool group — click
+activates, double-click / right-click swaps which tool the slot
+holds</li>
+<li>Krita's native toolbars can be embedded into the titlebar via the
+<code>CustomToolBar</code> component</li>
+<li>Titlebar height follows the tallest component (a toolbar is usually
+taller than the menus)</li>
+<li>Drag empty titlebar space to move the window; Aero Snap (half /
+quarter screen) works at the screen edges</li>
+<li>Double-click empty titlebar space to toggle maximise / restore</li>
 </ul>
+
+<h2 id="configuration">Configuration</h2>
+<p><code>config.json</code> sits next to
+<code>FramelessExtension.py</code>. Delete or corrupt it and a fresh
+template is written on the next launch. The template (shown
+compactly):</p>
+<pre><code>{
+    "layout": [
+        {"name": "Separator",       "config": {"width": 4}},
+        {"name": "OriginalMenuBar", "config": {"compact": true}},
+        {"name": "CurrentFileName", "config": {"poll_ms": 500}},
+        {"name": "ToolSlot", "config": {"id": "brush",  "tools": ["KritaShape/KisToolBrush"]}},
+        {"name": "ToolSlot", "config": {"id": "select", "tools": ["KisToolSelectOutline", "KisToolSelectElliptical", "KisToolSelectRectangular", "KisToolSelectPolygonal", "KisToolSelectSimilar", "KisToolSelectMagnetic"]}},
+        {"name": "ToolSlot", "config": {"id": "shape",  "tools": ["KisToolPolyline", "KritaShape/KisToolLine", "KritaShape/KisToolRectangle", "KritaShape/KisToolEllipse"]}},
+        {"name": "ToolSlot", "config": {"id": "fill",   "tools": ["KritaFill/KisToolFill", "KritaFill/KisToolGradient", "KritaShape/KisToolLazyBrush"]}},
+        {"name": "ToolSlot", "config": {"id": "misc",   "tools": ["ToolReferenceImages", "KisToolCrop", "KritaShape/KisToolMeasure", "KisAssistantTool", "SvgTextTool", "KritaSelected/KisToolColorSampler"]}},
+        {"name": "Spacer",          "config": {"scale": 1}},
+        {"name": "CustomToolBar",   "config": {"toolbar_name": "customToolBar2"}},
+        {"name": "Spacer",          "config": {"scale": 1}},
+        {"name": "WindowControl",   "config": {"button_width": 60, "close_hover_bg": "#E81123"}}
+    ]
+}</code></pre>
+<p>Every entry needs a <code>name</code>; <code>config</code> is
+optional and unknown or invalid values fall back to the component's
+defaults. An unknown <code>name</code>, a malformed
+<code>config</code>, or invalid JSON makes the loader overwrite the file
+with the template — so a typo costs you your custom layout.</p>
+
+<h2 id="built-in-components">Built-in components</h2>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 40%" />
+<col style="width: 38%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Purpose</th>
+<th>Config keys</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>CurrentFileName</code></td>
+<td>Shows the active document name, or <code>Untitled</code> when none
+is open</td>
+<td><code>poll_ms</code> (int, default 500)</td>
+</tr>
+<tr class="even">
+<td><code>OriginalMenuBar</code></td>
+<td>Migrated native QMenuBar</td>
+<td><code>compact</code> (bool, default false) — single icon button with
+dropdown; <code>menu_label</code> (str) — button text override</td>
+</tr>
+<tr class="odd">
+<td><code>Separator</code></td>
+<td>Fixed-width visual divider</td>
+<td><code>width</code> (int, px, default 8)</td>
+</tr>
+<tr class="even">
+<td><code>Spacer</code></td>
+<td>Expands to fill remaining space</td>
+<td><code>scale</code> (int, ≥1, default 1) — proportion relative to
+other spacers</td>
+</tr>
+<tr class="odd">
+<td><code>ToolSlot</code></td>
+<td>Photoshop-style tool slot — click activates its tool,
+double-click / right-click swaps it</td>
+<td><code>tools</code> (required, list of Krita tool ids);
+<code>id</code> (str, persistence key); <code>size</code> (int, px);
+<code>poll_ms</code> (int, default 66); <code>show_marker</code> (bool,
+default true); <code>tooltip_hint</code> (str)</td>
+</tr>
+<tr class="even">
+<td><code>CustomToolBar</code></td>
+<td>Embeds a Krita QToolBar inside the titlebar</td>
+<td><code>toolbar_name</code> (str, default
+<code>"customToolBar2"</code>) — objectName of any Krita toolbar</td>
+</tr>
+<tr class="odd">
+<td><code>WindowControl</code></td>
+<td>Minimise / Maximise / Close buttons</td>
+<td><code>button_width</code> (int, px, default 60),
+<code>close_hover_bg</code> (CSS color, default
+<code>"#E81123"</code>)</td>
+</tr>
+</tbody>
+</table>
+
+<h3 id="tool-slots">Tool slots (<code>ToolSlot</code>)</h3>
+<p>One <code>ToolSlot</code> entry is one button backed by a list of
+tools. Nothing is grouped behind the scenes — put several entries next
+to each other and you get a Photoshop-like stack (a row, because the
+titlebar is horizontal).</p>
+<ul>
+<li>The slot <strong>remembers</strong> which tool of its list it holds;
+the first tool of the list is the initial one.</li>
+<li><strong>Single click</strong> activates the remembered tool.</li>
+<li><strong>Double click</strong> or <strong>right click</strong> opens
+a menu at the mouse cursor listing every tool of the slot; picking one
+activates it and becomes the tool the slot holds from then on. A double
+click therefore also activates the remembered tool first — accepted
+behaviour.</li>
+<li><strong>A slot holding a single tool</strong> behaves like a plain
+tool button: no menu, and no corner marker.</li>
+<li>The slot <strong>highlights</strong> whenever the active tool belongs
+to its list and shows that tool's icon, so switching tools with a
+keyboard shortcut updates the matching slot, Photoshop-style.</li>
+<li>The small corner triangle marks slots hiding more than one tool
+(<code>show_marker: false</code> removes it).</li>
+<li>The choice is persisted in <code>kritarc</code> (group
+<code>[frameless]</code>, key <code>toolslot/&lt;id&gt;</code>), so it
+survives restarts and never rewrites <code>config.json</code>.</li>
+</ul>
+<p>Krita exposes no "tool changed" signal to Python, so every slot polls
+the active tool every <code>poll_ms</code> (66 ms by default).</p>
+<p><strong>Finding tool ids.</strong> Tool ids are the
+<code>objectName()</code> of the buttons in Krita's own toolbox, e.g.
+<code>KritaShape/KisToolBrush</code>,
+<code>KritaFill/KisToolFill</code>, <code>KisToolSelectOutline</code>,
+<code>SvgTextTool</code>. To list them, paste this into Krita's
+Scripter (Tools → Scripts → Scripter):</p>
+<pre><code>from PyQt5.QtWidgets import QToolButton
+from krita import Krita
+
+win = Krita.instance().activeWindow().qwindow()
+for obj in win.findChildren(object):
+    if obj.metaObject().className() == 'KoToolBox':
+        for btn in obj.findChildren(QToolButton):
+            if btn.objectName():
+                print(repr(btn.objectName()), '|', btn.text())</code></pre>
+<p>Two slots with the same <code>tools</code> list share their memory
+unless each gets an explicit <code>id</code>; when you reorder or edit a
+list, set <code>id</code> to keep the previously remembered tool.</p>
+
+<h3 id="adding-your-own-component">Adding your own component</h3>
+<ol type="1">
+<li>Create <code>components/your_component.py</code> exposing
+<code>create(window, bar_h, config, ctx) -&gt; QWidget</code>.</li>
+<li>Register it in <code>COMPONENT_REGISTRY</code> in
+<code>components/__init__.py</code>.</li>
+<li>Use <code>{"name": "YourComponent", "config": {...}}</code> in
+<code>config.json</code>.</li>
+</ol>
+<p>Inside <code>create</code> you can subscribe to
+<code>ctx.palette_changed</code>, <code>ctx.window_state_changed</code>
+and <code>ctx.teardown</code>. Always free timers, event filters and
+shortcuts from the <code>teardown</code> handler — the titlebar is
+destroyed and rebuilt whenever the window is reopened.</p>
+
 <h2 id="technical-overview">Technical overview</h2>
 <h3 id="why-not-qt.framelesswindowhint">Why not
 <code>Qt.FramelessWindowHint</code></h3>
@@ -52,9 +223,9 @@ correct approach: manual Win32 style manipulation</h3>
 handle custom titlebars at the lowest level:</p>
 <table>
 <colgroup>
-<col style="width: 35%" />
-<col style="width: 35%" />
-<col style="width: 29%" />
+<col style="width: 26%" />
+<col style="width: 38%" />
+<col style="width: 36%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -97,28 +268,73 @@ natively</td>
 </tr>
 </tbody>
 </table>
+<p><code>WM_NCHITTEST</code> returns <code>False</code> / <code>0</code>
+while the window is maximised, so the invisible resize border cannot
+steal clicks from a maximised window.</p>
+<h3 id="titlebar-architecture">Titlebar architecture</h3>
+<p>The custom titlebar is set as a <strong>TopLeftCorner widget</strong>
+of the original (cleared) QMenuBar, with a Resize event filter forcing
+it to full menubar width. Before clearing, all QMenu objects are
+extracted and migrated into a real <code>QMenuBar</code> widget inside
+the titlebar — preserving Alt+letter shortcuts, hover-to-switch, and
+keyboard navigation.</p>
+<p>Because the titlebar is a child of the menubar, the menubar is given
+the same minimum height — otherwise components taller than the (now
+empty) menubar, such as the default 32 px <code>ToolSlot</code>, would be
+clipped.</p>
+<p>Two guards keep that position alive: a 100 ms poll re-installs the
+corner widget (and hides any TopRightCorner one) if Krita's MDI area
+steals it, and <code>windowClosed</code> tears everything down — event
+filters removed, native event filter uninstalled, components notified
+via <code>teardown</code>.</p>
+<p>Components communicate with the titlebar via a shared
+<code>_ComponentContext</code> (signal bus):
+<code>palette_changed</code>, <code>window_state_changed</code>,
+<code>teardown</code>.</p>
 <h3 id="drag-handling">Drag handling</h3>
-<p>A Qt event filter is installed on the menu bar. Window drag starts on
-<strong>MouseMove after a 5 px threshold</strong> (not on MousePress —
-this preserves double-click detection). The drag itself uses Qt’s
-<code>QWindow.startSystemMove()</code>, which internally calls
+<p>A Qt <code>mousePressEvent</code> / <code>mouseMoveEvent</code>
+handler on the custom <code>_TitleBar</code> widget starts a window drag
+on <strong>MouseMove after a 5 px threshold</strong> (not on MousePress
+— this preserves double-click detection). The drag itself uses Qt's
+<code>QWindow.startSystemMove()</code>, which internally issues
 <code>DefWindowProc(WM_SYSCOMMAND, SC_MOVE | HTCAPTION)</code> — Aero
 Snap is triggered automatically.</p>
+<p>A click is treated as interactive (never starts a drag) when the
+deepest child under the cursor is a <code>QToolButton</code> — that
+covers the window control buttons, the compact-mode menu button and
+every <code>ToolSlot</code>.</p>
 <h3 id="krita-specific-caveats">Krita-specific caveats</h3>
 <p>Krita’s Python API objects (<code>Window</code>, <code>View</code>,
 <code>Document</code>, etc.) are <strong>ephemeral thin
 wrappers</strong> — they can be garbage-collected at any time. Never
-capture their references in signal callbacks or asynchronous code.
-Instead, cache stable underlying Qt object identifiers (like
-<code>qwin.objectName()</code>) and look up fresh wrappers at call time
-via <code>Krita.instance().windows()</code>.</p>
+capture their references in signal callbacks or asynchronous code;
+cache stable identifiers such as <code>qwin.objectName()</code> and
+re-look-up the wrapper through <code>Krita.instance().windows()</code>
+when you need it. Menubar mutations are deferred via
+<code>QTimer.singleShot(0)</code> to avoid segfaults, while the Win32 /
+DWM style changes are applied synchronously so the window never flashes
+a native titlebar.</p>
+<p>Note that <code>Document.fileName()</code> returns the
+<strong>full path</strong>, not the basename.</p>
 <h3 id="file-structure">File structure</h3>
 <pre><code>frameless/
-├── compact_titlebar.desktop              # Krita plugin descriptor
+├── frameless.desktop                     # Krita plugin descriptor
 ├── frameless/
 │   ├── __init__.py                       # Python package entry
-│   ├── CompactTitlebarExtension.py       # main logic (heavily commented)
+│   ├── FramelessExtension.py             # main logic (Win32/DWM + titlebar + entry point)
+│   ├── config.json                       # layout config (auto-generated on first run)
+│   ├── components/
+│   │   ├── __init__.py                   # component registry + config loader
+│   │   ├── filename.py                   # CurrentFileName
+│   │   ├── menubar.py                    # OriginalMenuBar
+│   │   ├── separator.py                  # Separator (fixed-width divider)
+│   │   ├── spacer.py                     # Spacer (proportional expansion)
+│   │   ├── tool_slot.py                  # ToolSlot (Photoshop-style tool slot)
+│   │   ├── tool_source.py                # tool lookup / activation helpers
+│   │   ├── toolbar.py                    # CustomToolBar
+│   │   └── window_control.py             # WindowControl
 │   ├── krita.pyi                         # Krita Python API type stubs
-│   └── Manual.html                       # Krita plugin help page
-├── README.md                              # this file (English)
-└── README_cn.md                           # Chinese version</code></pre>
+│   └── Manual.html                       # this help page
+├── image.png                             # screenshot
+├── README.md                             # English readme
+└── README_cn.md                          # Chinese readme</code></pre>

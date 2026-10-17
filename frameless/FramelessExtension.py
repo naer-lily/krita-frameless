@@ -245,6 +245,12 @@ class _TitleBar(QWidget):
             widget = COMPONENT_REGISTRY[name](window, bar_h, cfg, self._ctx)
             layout.addWidget(widget)
 
+        # Components may be taller than the (now cleared) native menubar —
+        # e.g. ToolSlot defaults to 32 px.  Grow the titlebar instead of
+        # letting the menubar clip it; createActions() mirrors this on the
+        # menubar itself.
+        self.setMinimumHeight(max(bar_h, self.sizeHint().height()))
+
         # ---- Window-state tracking → signal instead of hasattr ----------
         self._state_filter = _WindowStateFilter(
             lambda: self._ctx.window_state_changed.emit())
@@ -408,6 +414,9 @@ class FramelessExtension(Extension):
             # ---- Set as TopLeftCorner + full-width Resize filter --------
             original_menubar.setCornerWidget(titlebar, Qt.TopLeftCorner)
             titlebar.show()
+            # The menubar is the corner widget's parent, so it has to be
+            # tall enough or the titlebar gets clipped.
+            original_menubar.setMinimumHeight(titlebar.minimumHeight())
             original_menubar.updateGeometry()
             resize_filter = _CornerResizeFilter(original_menubar, titlebar)
             original_menubar.installEventFilter(resize_filter)

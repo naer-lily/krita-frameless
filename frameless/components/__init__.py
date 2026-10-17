@@ -23,6 +23,7 @@ from . import filename
 from . import menubar
 from . import separator
 from . import spacer
+from . import tool_slot
 from . import toolbar
 from . import window_control
 
@@ -46,6 +47,7 @@ COMPONENT_REGISTRY: Dict[
     'OriginalMenuBar':  menubar.create,
     'Separator':        separator.create,
     'Spacer':           spacer.create,
+    'ToolSlot':         tool_slot.create,
     'WindowControl':    window_control.create,
 }
 
@@ -97,6 +99,51 @@ _DEFAULT_CONFIG: dict = {
         {"name": "Separator",       "config": {"width": 4}},
         {"name": "OriginalMenuBar", "config": {"compact": True}},
         {"name": "CurrentFileName", "config": {"poll_ms": 500}},
+        {"name": "ToolSlot", "config": {
+            "id": "brush",
+            "tools": [
+                "KritaShape/KisToolBrush",
+            ],
+        }},
+        {"name": "ToolSlot", "config": {
+            "id": "select",
+            "tools": [
+                "KisToolSelectOutline",
+                "KisToolSelectElliptical",
+                "KisToolSelectRectangular",
+                "KisToolSelectPolygonal",
+                "KisToolSelectSimilar",
+                "KisToolSelectMagnetic",
+            ],
+        }},
+        {"name": "ToolSlot", "config": {
+            "id": "shape",
+            "tools": [
+                "KisToolPolyline",
+                "KritaShape/KisToolLine",
+                "KritaShape/KisToolRectangle",
+                "KritaShape/KisToolEllipse",
+            ],
+        }},
+        {"name": "ToolSlot", "config": {
+            "id": "fill",
+            "tools": [
+                "KritaFill/KisToolFill",
+                "KritaFill/KisToolGradient",
+                "KritaShape/KisToolLazyBrush",
+            ],
+        }},
+        {"name": "ToolSlot", "config": {
+            "id": "misc",
+            "tools": [
+                "ToolReferenceImages",
+                "KisToolCrop",
+                "KritaShape/KisToolMeasure",
+                "KisAssistantTool",
+                "SvgTextTool",
+                "KritaSelected/KisToolColorSampler",
+            ],
+        }},
         {"name": "Spacer",          "config": {"scale": 1}},
         {"name": "CustomToolBar",   "config": {"toolbar_name": "customToolBar2"}},
         {"name": "Spacer",          "config": {"scale": 1}},

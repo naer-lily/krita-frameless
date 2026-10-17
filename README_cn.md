@@ -38,7 +38,7 @@ Frameless：
 └──────────────────────────────────────────────────┘
 ```
 
-- 左侧显示当前文档名：从未保存过的文档显示 `Untitled`，有未保存修改时追加 `*`，无文档时整项隐藏
+- 左侧显示当前文档名：从未保存过的文档显示 `Untitled`，有未保存修改时追加 `*`，可选再显示该文档的编辑时长；无文档时整项隐藏
 - 菜单可完整展示或缩为单个图标按钮（下拉展开），两种模式均保留 Alt+字母快捷键
 - **Photoshop 式工具槽**——一个工具组一个按钮；单击激活，双击/右键换掉这个槽里的工具
 - **Krita 原生工具栏可直接嵌入标题栏**——通过 `CustomToolBar` 组件，回收纵向屏幕空间
@@ -81,7 +81,7 @@ Frameless：
 
 | 组件 | 用途 | 配置项 |
 |------|------|--------|
-| `CurrentFileName` | 显示当前文档路径；从未保存的文档显示 `Untitled`；有未保存修改时追加 `*`（取自 `Document.modified()`）；无文档时整项隐藏 | `poll_ms`（int，默认 200） |
+| `CurrentFileName` | 显示当前文档路径；从未保存的文档显示 `Untitled`；有未保存修改时追加 `*`（取自 `Document.modified()`）；可选再显示该文档的编辑时长；无文档时整项隐藏 | `poll_ms`（int，默认 200）；`show_edit_time`（bool，默认 false）；`edit_time_poll_ms`（int，默认 30000） |
 | `OriginalMenuBar` | 迁移的原生 QMenuBar | `compact`（bool，默认 false）——缩为图标按钮下拉；`menu_label`（str）——按钮文字覆盖 |
 | `Separator` | 固定宽度视觉分割 | `width`（int，像素，默认 8） |
 | `Spacer` | 弹性空白，填满剩余空间 | `scale`（int，≥1，默认 1）——相对其他 Spacer 的比例 |
@@ -97,7 +97,8 @@ Frameless：
 
 - 槽会**记住**自己当前持有的工具，列表里的第一个是初始工具。
 - **单击**：激活它记住的工具。
-- **双击**或**右键**：在鼠标位置弹出菜单，列出该槽的全部工具；选中某个会激活它，
+- **双击**或**右键**：在鼠标位置弹出菜单，列出该槽的全部工具，每项都带工具图标和快捷键；
+  当前槽里存放的那个工具用粗体并高亮显示。选中某个会激活它，
   并且此后这个槽就一直是这个工具。（因此双击会先激活一次记住的工具再弹菜单，
   这是可接受的行为。）
 - **只放一个工具的槽**等同于普通工具按钮：不弹菜单，也不显示三角。
@@ -111,6 +112,11 @@ Frameless：
 
 Krita 的 Python API 没有"工具已切换"的信号，所以每个槽按 `poll_ms`
 （默认 66ms）轮询当前工具。
+
+Krita 在 Windows 上会打开 `Qt::AA_DontShowIconsInMenus`（`krita/main.cc` 里的注释是
+"Icons in menus are ugly and distracting"），Qt 于是丢掉所有菜单图标。槽只在自己的弹出菜单
+期间临时关掉这个开关，弹完立刻恢复，所以换工具菜单有图标，而 Krita
+自己的菜单仍然是纯文字。
 
 **如何查工具 id。** 工具 id 就是 Krita 工具箱里那些按钮的 `objectName()`，
 例如 `KritaShape/KisToolBrush`、`KritaFill/KisToolFill`、`KisToolSelectOutline`、

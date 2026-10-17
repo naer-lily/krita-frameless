@@ -36,7 +36,7 @@ Frameless:
 └──────────────────────────────────────────────────┘
 ```
 
-- Current document name shown on the left — `Untitled` for a document that was never saved, `*` appended while it has unsaved changes, hidden entirely while no document is open
+- Current document name shown on the left — `Untitled` for a document that was never saved, `*` appended while it has unsaved changes, optionally the document's editing time, hidden entirely while no document is open
 - Menus can be shown inline OR collapsed into a single icon button with dropdown — Alt+letter shortcuts preserved in both modes
 - **Photoshop-style tool slots** — one button per tool group; click activates, double-click / right-click swaps which tool the slot holds
 - **Krita's native toolbars can be embedded directly into the titlebar** via the `CustomToolBar` component — reclaim vertical screen space
@@ -80,7 +80,7 @@ with the template above — so a typo costs you your custom layout.
 
 | Component | Purpose | Config keys |
 |-----------|---------|-------------|
-| `CurrentFileName` | Shows the active document's path; `Untitled` for a document that was never saved; appends `*` while there are unsaved changes (from `Document.modified()`); hidden while no document is open | `poll_ms` (int, default 200) |
+| `CurrentFileName` | Shows the active document's path; `Untitled` for a document that was never saved; appends `*` while there are unsaved changes (from `Document.modified()`); optionally appends the document's editing time; hidden while no document is open | `poll_ms` (int, default 200); `show_edit_time` (bool, default false); `edit_time_poll_ms` (int, default 30000) |
 | `OriginalMenuBar` | Migrated native QMenuBar | `compact` (bool, default false) — single icon button with dropdown; `menu_label` (str) — button text override |
 | `Separator` | Fixed-width visual divider | `width` (int, px, default 8) |
 | `Spacer` | Expands to fill remaining space | `scale` (int, ≥1, default 1) — proportion relative to other spacers |
@@ -99,9 +99,12 @@ horizontal).
   the list is the initial one.
 - **Single click** activates the remembered tool.
 - **Double click** or **right click** opens a menu at the mouse cursor
-  listing every tool of the slot; picking one activates it and becomes
-  the tool the slot holds from then on. (A double click therefore also
-  activates the remembered tool first — accepted behaviour.)
+  listing every tool of the slot — each entry previews that
+  tool's icon and its keyboard shortcut, and the tool the slot holds
+  right now is in bold and highlighted. Picking one activates it and
+  becomes the tool the slot holds from then on. (A double click
+  therefore also activates the remembered tool first —
+  accepted behaviour.)
 - **A slot holding a single tool** behaves like a plain tool button: no
   menu, and no corner marker.
 - The whole row of slots hides while no document is open, together with
@@ -117,6 +120,12 @@ horizontal).
 
 Krita exposes no "tool changed" signal to Python, so every slot polls the
 active tool every `poll_ms` (66 ms by default).
+
+Krita turns on `Qt::AA_DontShowIconsInMenus` on Windows ("Icons in
+menus are ugly and distracting", `krita/main.cc`), which makes Qt drop
+every menu icon. The slot flips that flag only while its own popup is
+open and puts it straight back, so the swap menu previews icons while
+Krita's own menus stay text-only.
 
 **Finding tool ids.** Tool ids are the `objectName()` of the buttons in
 Krita's own toolbox, e.g. `KritaShape/KisToolBrush`, `KritaFill/KisToolFill`,

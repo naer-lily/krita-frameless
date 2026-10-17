@@ -26,7 +26,9 @@ from PyQt5.QtCore import QPoint, QSize, Qt, QTimer
 from PyQt5.QtGui import (
     QCursor, QKeySequence, QPainter, QPalette, QPolygon,
 )
-from PyQt5.QtWidgets import QMenu, QSizePolicy, QToolButton, QWidget
+from PyQt5.QtWidgets import (
+    QApplication, QMenu, QSizePolicy, QToolButton, QWidget,
+)
 from krita import Krita
 
 from .tool_source import ToolSource
@@ -220,20 +222,28 @@ class _ToolSlotButton(QToolButton):
         except Exception:
             traceback.print_exc()
 
-    def _show_menu(self):
+    def _build_menu(self) -> Optional[QMenu]:
+        """The swap menu, or None when there is nothing to choose from."""
         # A single-tool slot has nothing to choose from.
         if len(self._tools) < 2:
-            return
-
-        self.setDown(False)
+            return None
 
         menu = QMenu(self)
         shown = self._displayed_id()
+        current_action = None
         for tool_id in self._tools:
             info = self._source.info(tool_id)
             action = menu.addAction(info.icon, info.label)
             action.setCheckable(True)
             action.setChecked(tool_id == shown)
+            if tool_id == shown:
+                # The style's check indicator sits inside the icon cell and is
+                # easy to miss, so mark the tool the slot holds in bold as
+                # well and make it the menu's active row.
+                current_action = action
+                font = action.font()
+                font.setBold(True)
+                action.setFont(font)
             if info.shortcut:
                 # Display only — the action is never added to a widget, so
                 # this cannot grab a global shortcut.
@@ -244,11 +254,32 @@ class _ToolSlotButton(QToolButton):
                 action.setEnabled(False)
             action.triggered.connect(
                 lambda _checked=False, tid=tool_id: self._choose(tid))
+        menu.setActiveAction(current_action)
+        return menu
 
+    def _show_menu(self):
+        menu = self._build_menu()
+        if menu is None:
+            return
+
+        self.setDown(False)
         self._menu = menu
+
+        # Krita sets Qt::AA_DontShowIconsInMenus on non-KDE platforms
+        # (krita/main.cc: "Icons in menus are ugly and distracting"), which
+        # makes Qt drop every action icon — the swap menu would be text only.
+        # Flip the flag for the lifetime of this one menu so the tools'
+        # icons are previewed, then put it back.
+        app = QApplication.instance()
+        restore = (app is not None
+                   and app.testAttribute(Qt.AA_DontShowIconsInMenus))
+        if restore:
+            app.setAttribute(Qt.AA_DontShowIconsInMenus, False)
         try:
             menu.exec_(QCursor.pos())
         finally:
+            if restore:
+                app.setAttribute(Qt.AA_DontShowIconsInMenus, True)
             self._menu = None
         self._sync()
         self._apply_display(force=True)

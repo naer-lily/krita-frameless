@@ -42,7 +42,8 @@ Frameless:
 <ul>
 <li>Document name on the left — <code>Untitled</code> for a document
 that was never saved, <code>*</code> appended while it has unsaved
-changes, hidden entirely while no document is open</li>
+changes, optionally the document's editing time, hidden entirely while
+no document is open</li>
 <li>Menus inline, or collapsed into a single icon button with a dropdown
 — Alt+letter shortcuts survive in both modes</li>
 <li>Photoshop-style tool slots: one button per tool group — click
@@ -103,8 +104,13 @@ with the template — so a typo costs you your custom layout.</p>
 <td><code>CurrentFileName</code></td>
 <td>Shows the active document’s path; <code>Untitled</code> for a
 document that was never saved; appends <code>*</code> while there are
-unsaved changes; hidden while no document is open</td>
-<td><code>poll_ms</code> (int, default 200)</td>
+unsaved changes; optionally appends the document's editing time
+(the <code>editing-time</code> counter from the document info XML, the
+one Krita's <em>Document Information</em> dialog shows); hidden while
+no document is open</td>
+<td><code>poll_ms</code> (int, default 200);<br/>
+<code>show_edit_time</code> (bool, default false);<br/>
+<code>edit_time_poll_ms</code> (int, default 30000)</td>
 </tr>
 <tr class="even">
 <td><code>OriginalMenuBar</code></td>
@@ -160,9 +166,11 @@ titlebar is horizontal).</p>
 the first tool of the list is the initial one.</li>
 <li><strong>Single click</strong> activates the remembered tool.</li>
 <li><strong>Double click</strong> or <strong>right click</strong> opens
-a menu at the mouse cursor listing every tool of the slot; picking one
-activates it and becomes the tool the slot holds from then on. A double
-click therefore also activates the remembered tool first — accepted
+a menu at the mouse cursor listing every tool of the slot — each
+entry previews that tool's icon and keyboard shortcut, and the tool the
+slot holds right now is in bold and highlighted. Picking one activates
+it and becomes the tool the slot holds from then on. A double click
+therefore also activates the remembered tool first — accepted
 behaviour.</li>
 <li><strong>A slot holding a single tool</strong> behaves like a plain
 tool button: no menu, and no corner marker.</li>
@@ -179,6 +187,16 @@ survives restarts and never rewrites <code>config.json</code>.</li>
 </ul>
 <p>Krita exposes no "tool changed" signal to Python, so every slot polls
 the active tool every <code>poll_ms</code> (66 ms by default).</p>
+<p>Krita turns on <code>Qt::AA_DontShowIconsInMenus</code> on Windows
+(<code>krita/main.cc</code>: "Icons in menus are ugly and distracting"),
+which makes Qt drop every menu icon. The slot flips that flag only while
+its own popup is open and puts it straight back, so the swap menu
+previews icons while Krita's own menus stay text-only.</p>
+<p>Krita turns on <code>Qt::AA_DontShowIconsInMenus</code> on Windows
+(<code>krita/main.cc</code>: "Icons in menus are ugly and distracting"),
+which makes Qt drop every menu icon. The slot flips that flag only while
+its own popup is open and puts it straight back, so the swap menu
+previews icons while Krita's own menus stay text-only.</p>
 <p><strong>Finding tool ids.</strong> Tool ids are the
 <code>objectName()</code> of the buttons in Krita's own toolbox, e.g.
 <code>KritaShape/KisToolBrush</code>,

@@ -98,7 +98,7 @@ _DEFAULT_CONFIG: dict = {
     "layout": [
         {"name": "Separator",       "config": {"width": 4}},
         {"name": "OriginalMenuBar", "config": {"compact": True}},
-        {"name": "CurrentFileName", "config": {"poll_ms": 500}},
+        {"name": "CurrentFileName", "config": {"poll_ms": 200}},
         {"name": "ToolSlot", "config": {
             "id": "brush",
             "tools": [

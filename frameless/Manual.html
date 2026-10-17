@@ -40,8 +40,9 @@ Frameless:
 │  canvas                                           │
 └──────────────────────────────────────────────────┘</code></pre>
 <ul>
-<li>Document name on the left, falling back to <code>Untitled</code>
-when no document is open</li>
+<li>Document name on the left — <code>Untitled</code> for a document
+that was never saved, <code>*</code> appended while it has unsaved
+changes, hidden entirely while no document is open</li>
 <li>Menus inline, or collapsed into a single icon button with a dropdown
 — Alt+letter shortcuts survive in both modes</li>
 <li>Photoshop-style tool slots: one button per tool group — click
@@ -65,7 +66,7 @@ compactly):</p>
     "layout": [
         {"name": "Separator",       "config": {"width": 4}},
         {"name": "OriginalMenuBar", "config": {"compact": true}},
-        {"name": "CurrentFileName", "config": {"poll_ms": 500}},
+        {"name": "CurrentFileName", "config": {"poll_ms": 200}},
         {"name": "ToolSlot", "config": {"id": "brush",  "tools": ["KritaShape/KisToolBrush"]}},
         {"name": "ToolSlot", "config": {"id": "select", "tools": ["KisToolSelectOutline", "KisToolSelectElliptical", "KisToolSelectRectangular", "KisToolSelectPolygonal", "KisToolSelectSimilar", "KisToolSelectMagnetic"]}},
         {"name": "ToolSlot", "config": {"id": "shape",  "tools": ["KisToolPolyline", "KritaShape/KisToolLine", "KritaShape/KisToolRectangle", "KritaShape/KisToolEllipse"]}},
@@ -101,8 +102,9 @@ with the template — so a typo costs you your custom layout.</p>
 <tr class="odd">
 <td><code>CurrentFileName</code></td>
 <td>Shows the active document’s path; <code>Untitled</code> for a
-document that was never saved; hidden while no document is open</td>
-<td><code>poll_ms</code> (int, default 500)</td>
+document that was never saved; appends <code>*</code> while there are
+unsaved changes; hidden while no document is open</td>
+<td><code>poll_ms</code> (int, default 200)</td>
 </tr>
 <tr class="even">
 <td><code>OriginalMenuBar</code></td>

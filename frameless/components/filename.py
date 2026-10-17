@@ -1,16 +1,19 @@
 """CurrentFileName — shows the active Krita document name.
 
-* no document open          → the label hides (nothing to show)
+* no document open           → the label hides (nothing to show)
 * document open, never saved → shows ``Untitled``
 * document open, saved       → shows the file path
+* unsaved changes            → a ``*`` is appended (same meaning as the ``*``
+  Krita itself puts in the window title)
 """
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 from krita import Krita
 
 
-DEFAULT_POLL_MS = 500
+DEFAULT_POLL_MS = 200
 PLACEHOLDER_TEXT = "Untitled"
+MODIFIED_MARKER = "*"
 
 
 class _FileNameSection(QLabel):
@@ -35,10 +38,20 @@ class _FileNameSection(QLabel):
                 self.hide()
                 return
             fname = doc.fileName()
+            # Document.modified() is the public libkis mirror of
+            # KisDocument::isModified(): true while the undo stack is not at a
+            # saved state. getattr keeps old Krita builds from breaking the
+            # whole component.
+            modified = bool(getattr(doc, 'modified', lambda: False)())
         except Exception:
             self.hide()
             return
-        self.setText(fname if fname else PLACEHOLDER_TEXT)
+        text = fname if fname else PLACEHOLDER_TEXT
+        if modified:
+            text += MODIFIED_MARKER
+        if text != self.text():
+            self.setText(text)
+            self.setToolTip(fname if fname else PLACEHOLDER_TEXT)
         self.show()
 
     def teardown(self):
@@ -49,7 +62,7 @@ def create(window, bar_h: int, config: dict, ctx):
     """Factory: CurrentFileName component.
 
     config keys (all optional):
-        poll_ms: int — polling interval in ms (default 500)
+        poll_ms: int — polling interval in ms (default 200)
     """
     poll_ms = config.get('poll_ms', DEFAULT_POLL_MS)
     if not isinstance(poll_ms, int) or poll_ms <= 0:

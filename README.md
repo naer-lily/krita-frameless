@@ -36,7 +36,7 @@ Frameless:
 └──────────────────────────────────────────────────┘
 ```
 
-- Current document name shown on the left, falling back to `Untitled` when no document is open
+- Current document name shown on the left — `Untitled` for a document that was never saved, `*` appended while it has unsaved changes, hidden entirely while no document is open
 - Menus can be shown inline OR collapsed into a single icon button with dropdown — Alt+letter shortcuts preserved in both modes
 - **Photoshop-style tool slots** — one button per tool group; click activates, double-click / right-click swaps which tool the slot holds
 - **Krita's native toolbars can be embedded directly into the titlebar** via the `CustomToolBar` component — reclaim vertical screen space
@@ -57,7 +57,7 @@ This is the template that gets written on first run (shown compactly):
     "layout": [
         {"name": "Separator",       "config": {"width": 4}},
         {"name": "OriginalMenuBar", "config": {"compact": true}},
-        {"name": "CurrentFileName", "config": {"poll_ms": 500}},
+        {"name": "CurrentFileName", "config": {"poll_ms": 200}},
         {"name": "ToolSlot", "config": {"id": "brush",  "tools": ["KritaShape/KisToolBrush"]}},
         {"name": "ToolSlot", "config": {"id": "select", "tools": ["KisToolSelectOutline", "KisToolSelectElliptical", "KisToolSelectRectangular", "KisToolSelectPolygonal", "KisToolSelectSimilar", "KisToolSelectMagnetic"]}},
         {"name": "ToolSlot", "config": {"id": "shape",  "tools": ["KisToolPolyline", "KritaShape/KisToolLine", "KritaShape/KisToolRectangle", "KritaShape/KisToolEllipse"]}},
@@ -80,7 +80,7 @@ with the template above — so a typo costs you your custom layout.
 
 | Component | Purpose | Config keys |
 |-----------|---------|-------------|
-| `CurrentFileName` | Shows the active document's path; `Untitled` for a document that was never saved; hidden while no document is open | `poll_ms` (int, default 500) |
+| `CurrentFileName` | Shows the active document's path; `Untitled` for a document that was never saved; appends `*` while there are unsaved changes (from `Document.modified()`); hidden while no document is open | `poll_ms` (int, default 200) |
 | `OriginalMenuBar` | Migrated native QMenuBar | `compact` (bool, default false) — single icon button with dropdown; `menu_label` (str) — button text override |
 | `Separator` | Fixed-width visual divider | `width` (int, px, default 8) |
 | `Spacer` | Expands to fill remaining space | `scale` (int, ≥1, default 1) — proportion relative to other spacers |

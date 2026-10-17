@@ -38,7 +38,7 @@ Frameless：
 └──────────────────────────────────────────────────┘
 ```
 
-- 左侧显示当前文档名，没有打开文档时显示 `Untitled`
+- 左侧显示当前文档名：从未保存过的文档显示 `Untitled`，有未保存修改时追加 `*`，无文档时整项隐藏
 - 菜单可完整展示或缩为单个图标按钮（下拉展开），两种模式均保留 Alt+字母快捷键
 - **Photoshop 式工具槽**——一个工具组一个按钮；单击激活，双击/右键换掉这个槽里的工具
 - **Krita 原生工具栏可直接嵌入标题栏**——通过 `CustomToolBar` 组件，回收纵向屏幕空间
@@ -59,7 +59,7 @@ Frameless：
     "layout": [
         {"name": "Separator",       "config": {"width": 4}},
         {"name": "OriginalMenuBar", "config": {"compact": true}},
-        {"name": "CurrentFileName", "config": {"poll_ms": 500}},
+        {"name": "CurrentFileName", "config": {"poll_ms": 200}},
         {"name": "ToolSlot", "config": {"id": "brush",  "tools": ["KritaShape/KisToolBrush"]}},
         {"name": "ToolSlot", "config": {"id": "select", "tools": ["KisToolSelectOutline", "KisToolSelectElliptical", "KisToolSelectRectangular", "KisToolSelectPolygonal", "KisToolSelectSimilar", "KisToolSelectMagnetic"]}},
         {"name": "ToolSlot", "config": {"id": "shape",  "tools": ["KisToolPolyline", "KritaShape/KisToolLine", "KritaShape/KisToolRectangle", "KritaShape/KisToolEllipse"]}},
@@ -81,7 +81,7 @@ Frameless：
 
 | 组件 | 用途 | 配置项 |
 |------|------|--------|
-| `CurrentFileName` | 显示当前文档路径；从未保存的文档显示 `Untitled`；无文档时整项隐藏 | `poll_ms`（int，默认 500） |
+| `CurrentFileName` | 显示当前文档路径；从未保存的文档显示 `Untitled`；有未保存修改时追加 `*`（取自 `Document.modified()`）；无文档时整项隐藏 | `poll_ms`（int，默认 200） |
 | `OriginalMenuBar` | 迁移的原生 QMenuBar | `compact`（bool，默认 false）——缩为图标按钮下拉；`menu_label`（str）——按钮文字覆盖 |
 | `Separator` | 固定宽度视觉分割 | `width`（int，像素，默认 8） |
 | `Spacer` | 弹性空白，填满剩余空间 | `scale`（int，≥1，默认 1）——相对其他 Spacer 的比例 |

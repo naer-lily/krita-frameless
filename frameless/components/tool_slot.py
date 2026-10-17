@@ -142,6 +142,7 @@ class _ToolSlotButton(QToolButton):
     # -- lifecycle --------------------------------------------------------
 
     def start(self):
+        self._sync()
         self._timer.start(self._poll_ms)
 
     def teardown(self):
@@ -169,6 +170,12 @@ class _ToolSlotButton(QToolButton):
     def _sync(self):
         # Never let a slot failure escape into Qt's event loop.
         try:
+            if Krita.instance().activeDocument() is None:
+                # No document open — the titlebar section hides entirely.
+                self.setVisible(False)
+                return
+            self.setVisible(True)
+
             current = self._current_tool()
             if current and current in self._tools:
                 if current != self._remembered:

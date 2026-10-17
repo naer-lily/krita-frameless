@@ -80,12 +80,12 @@ with the template above — so a typo costs you your custom layout.
 
 | Component | Purpose | Config keys |
 |-----------|---------|-------------|
-| `CurrentFileName` | Shows the active document name, or `Untitled` when none is open | `poll_ms` (int, default 500) |
+| `CurrentFileName` | Shows the active document's path; `Untitled` for a document that was never saved; hidden while no document is open | `poll_ms` (int, default 500) |
 | `OriginalMenuBar` | Migrated native QMenuBar | `compact` (bool, default false) — single icon button with dropdown; `menu_label` (str) — button text override |
 | `Separator` | Fixed-width visual divider | `width` (int, px, default 8) |
 | `Spacer` | Expands to fill remaining space | `scale` (int, ≥1, default 1) — proportion relative to other spacers |
-| `ToolSlot` | **Photoshop-style tool slot** — click activates its tool, double-click / right-click swaps it | `tools` (**required**, list of Krita tool ids); `id` (str, persistence key); `size` (int, px); `poll_ms` (int, default 66); `show_marker` (bool, default true); `tooltip_hint` (str) |
-| `CustomToolBar` | **Embeds a Krita QToolBar inside the titlebar** | `toolbar_name` (str, default `"customToolBar2"`) — objectName of any Krita toolbar |
+| `ToolSlot` | **Photoshop-style tool slot** — click activates its tool, double-click / right-click swaps it; hidden while no document is open | `tools` (**required**, list of Krita tool ids); `id` (str, persistence key); `size` (int, px); `poll_ms` (int, default 66); `show_marker` (bool, default true); `tooltip_hint` (str) |
+| `CustomToolBar` | **Embeds a Krita QToolBar inside the titlebar** — hidden while no document is open, restored when one is reopened | `toolbar_name` (str, default `"customToolBar2"`) — objectName of any Krita toolbar |
 | `WindowControl` | Minimize / Maximize / Close buttons | `button_width` (int, px, default 60), `close_hover_bg` (CSS color, default `"#E81123"`) |
 
 #### Tool slots (`ToolSlot`)
@@ -104,6 +104,8 @@ horizontal).
   activates the remembered tool first — accepted behaviour.)
 - **A slot holding a single tool** behaves like a plain tool button: no
   menu, and no corner marker.
+- The whole row of slots hides while no document is open, together with
+  the document name.
 - The slot **highlights** whenever the active tool belongs to its list,
   and shows that tool's icon. So switching tools with a keyboard shortcut
   updates the matching slot, Photoshop-style.

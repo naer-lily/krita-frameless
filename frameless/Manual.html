@@ -100,8 +100,8 @@ with the template — so a typo costs you your custom layout.</p>
 <tbody>
 <tr class="odd">
 <td><code>CurrentFileName</code></td>
-<td>Shows the active document name, or <code>Untitled</code> when none
-is open</td>
+<td>Shows the active document’s path; <code>Untitled</code> for a
+document that was never saved; hidden while no document is open</td>
 <td><code>poll_ms</code> (int, default 500)</td>
 </tr>
 <tr class="even">
@@ -124,7 +124,8 @@ other spacers</td>
 <tr class="odd">
 <td><code>ToolSlot</code></td>
 <td>Photoshop-style tool slot — click activates its tool,
-double-click / right-click swaps it</td>
+double-click / right-click swaps it; hidden while no document is
+open</td>
 <td><code>tools</code> (required, list of Krita tool ids);
 <code>id</code> (str, persistence key); <code>size</code> (int, px);
 <code>poll_ms</code> (int, default 66); <code>show_marker</code> (bool,
@@ -132,7 +133,8 @@ default true); <code>tooltip_hint</code> (str)</td>
 </tr>
 <tr class="even">
 <td><code>CustomToolBar</code></td>
-<td>Embeds a Krita QToolBar inside the titlebar</td>
+<td>Embeds a Krita QToolBar inside the titlebar — hidden while no
+document is open, restored when one is reopened</td>
 <td><code>toolbar_name</code> (str, default
 <code>"customToolBar2"</code>) — objectName of any Krita toolbar</td>
 </tr>
@@ -162,6 +164,8 @@ click therefore also activates the remembered tool first — accepted
 behaviour.</li>
 <li><strong>A slot holding a single tool</strong> behaves like a plain
 tool button: no menu, and no corner marker.</li>
+<li>The whole row of slots hides while no document is open, together
+with the document name.</li>
 <li>The slot <strong>highlights</strong> whenever the active tool belongs
 to its list and shows that tool's icon, so switching tools with a
 keyboard shortcut updates the matching slot, Photoshop-style.</li>

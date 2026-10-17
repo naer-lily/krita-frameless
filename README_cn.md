@@ -81,12 +81,12 @@ Frameless：
 
 | 组件 | 用途 | 配置项 |
 |------|------|--------|
-| `CurrentFileName` | 显示当前文档名，无文档时显示 `Untitled` | `poll_ms`（int，默认 500） |
+| `CurrentFileName` | 显示当前文档路径；从未保存的文档显示 `Untitled`；无文档时整项隐藏 | `poll_ms`（int，默认 500） |
 | `OriginalMenuBar` | 迁移的原生 QMenuBar | `compact`（bool，默认 false）——缩为图标按钮下拉；`menu_label`（str）——按钮文字覆盖 |
 | `Separator` | 固定宽度视觉分割 | `width`（int，像素，默认 8） |
 | `Spacer` | 弹性空白，填满剩余空间 | `scale`（int，≥1，默认 1）——相对其他 Spacer 的比例 |
-| `ToolSlot` | **Photoshop 式工具槽**——单击激活槽内工具，双击/右键更换 | `tools`（**必填**，Krita 工具 id 列表）；`id`（str，持久化键）；`size`（int，像素）；`poll_ms`（int，默认 66）；`show_marker`（bool，默认 true）；`tooltip_hint`（str） |
-| `CustomToolBar` | **将 Krita 原生 QToolBar 嵌入标题栏** | `toolbar_name`（str，默认 `"customToolBar2"`）——任意 Krita 工具栏的 objectName |
+| `ToolSlot` | **Photoshop 式工具槽**——单击激活槽内工具，双击/右键更换；无文档时隐藏 | `tools`（**必填**，Krita 工具 id 列表）；`id`（str，持久化键）；`size`（int，像素）；`poll_ms`（int，默认 66）；`show_marker`（bool，默认 true）；`tooltip_hint`（str） |
+| `CustomToolBar` | **将 Krita 原生 QToolBar 嵌入标题栏**——无文档时隐藏，重新打开文档后自动恢复 | `toolbar_name`（str，默认 `"customToolBar2"`）——任意 Krita 工具栏的 objectName |
 | `WindowControl` | 最小化/最大化/关闭按钮 | `button_width`（int，像素，默认 60），`close_hover_bg`（CSS 颜色，默认 `"#E81123"`） |
 
 #### 工具槽（`ToolSlot`）
@@ -101,6 +101,7 @@ Frameless：
   并且此后这个槽就一直是这个工具。（因此双击会先激活一次记住的工具再弹菜单，
   这是可接受的行为。）
 - **只放一个工具的槽**等同于普通工具按钮：不弹菜单，也不显示三角。
+- 没有打开任何文档时，整排槽（连同文档名）一起隐藏。
 - 当前工具属于某个槽的列表时，该槽**高亮**并显示当前工具的图标。
   也就是说用键盘快捷键切工具，对应的槽会自动跟着变，与 Photoshop 一致。
 - 右下角小三角表示该槽还藏着别的工具（`show_marker: false` 可关掉；

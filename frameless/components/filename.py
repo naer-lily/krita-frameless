@@ -1,8 +1,8 @@
 """CurrentFileName — shows the active Krita document name.
 
-When no document is open (or the Krita query fails) the section shows
-``PLACEHOLDER_TEXT`` instead of disappearing, so the titlebar layout does
-not shift when the last document is closed.
+* no document open          → the label hides (nothing to show)
+* document open, never saved → shows ``Untitled``
+* document open, saved       → shows the file path
 """
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QLabel, QSizePolicy
@@ -31,9 +31,13 @@ class _FileNameSection(QLabel):
     def _refresh(self):
         try:
             doc = Krita.instance().activeDocument()
-            fname = doc.fileName() if doc is not None else ""
+            if doc is None:
+                self.hide()
+                return
+            fname = doc.fileName()
         except Exception:
-            fname = ""
+            self.hide()
+            return
         self.setText(fname if fname else PLACEHOLDER_TEXT)
         self.show()
 
